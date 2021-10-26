@@ -37,14 +37,12 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
+int sensors = digitalRead(22);
+
 unsigned long sendDataPrevMillis = 0;
 int count = 0;
 bool signupOK = false;
 int dataLocal = 0;
-int dataPengunjungMasuk = 0;
-int dataPengunjungKeluar = 0;
-int dataAntrianMasuk = 0;
-int dataAntrianKeluar = 0;
 int batas = 0;
 int data_firebase = 0;
 
@@ -85,13 +83,54 @@ void handleGetLimitData()
     }
 }
 
+void handleUpdateData()
+{
+    if (dataLocal <= batas)
+    {
+        delay(500);
+        if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungMasuk/total", dataLocal))
+        {
+            // delay(500);
+            // Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/status_batas", false);
+
+            // Serial.println("PASSED");
+
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+        }
+        else
+        {
+            Serial.println("FAILED POST DATA");
+            Serial.println(fbdo.errorReason());
+        }
+    }
+}
+
+void handleSaveData()
+{
+    int sensor = digitalRead(22);
+    if (sensor == 0)
+    {
+        if (dataLocal <= batas)
+        {
+            dataLocal = dataLocal + 1;
+            handleUpdateData();
+        }
+    }
+    else
+    {
+        if (dataLocal == batas)
+        {
+            Serial.println("SUDAH MELEBIHI BATAS");
+            Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/status_batas", true);
+        }
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
 
-    pinMode(18, INPUT);
-    pinMode(19, INPUT);
-    pinMode(21, INPUT);
     pinMode(22, INPUT);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("Connecting to Wi-Fi");
@@ -103,6 +142,7 @@ void setup()
     Serial.println();
     Serial.print("Connected with IP: ");
     Serial.println(WiFi.localIP());
+    Serial.println();
 
     /* Assign the api key (required) */
     config.api_key = API_KEY;
@@ -129,92 +169,33 @@ void setup()
     handleGetLimitData();
     Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/status_batas", false);
 }
+
 void loop()
 {
-
     Serial.println();
     Serial.println();
     Serial.println();
     if (Firebase.ready() && signupOK)
     {
+        sendDataPrevMillis = millis();
+        // Write an Int number on the database path test/int
 
-        // Serial.print("NILAI SENSOR         :");
-        // Serial.println(digitalRead(22));
+        Serial.print("NILAI SENSOR         :");
+        Serial.println(sensors);
 
-        // Serial.print("DATA PRE FIREBASE 1      :");
-        // Serial.println(dataLocal);
+        // handleGetLimitData();
 
-        // int sensorPengunjungMasuk = digitalRead(18);
-        // int sensorPengunjungKeluar = digitalRead(19);
-        // int sensorAntrianMasuk = digitalRead(21);
-        int sensorAntrianKeluar = digitalRead(22);
+        // handleGetData();
 
-        if (dataPengunjungMasuk <= batas)
-        {
-            // if (sensorPengunjungMasuk == 0)
-            // {
-            //     dataPengunjungMasuk = dataPengunjungMasuk + 1;
-            //     if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungMasuk/total", dataPengunjungMasuk))
-            //     {
-            //         Serial.println("BERHASUL pengunjungMasuk");
-            //     }
-            //     else
-            //     {
-            //         Serial.println("GAGAL pengunjungMasuk");
-            //         Serial.println(fbdo.errorReason());
-            //     }
-            // }
+        Serial.print("DATA PRE FIREBASE 1      :");
+        Serial.println(dataLocal);
 
-            // if (sensorPengunjungKeluar == 0)
-            // {
-            //     dataPengunjungKeluar = dataPengunjungKeluar + 1;
-            //     dataPengunjungMasuk = dataPengunjungMasuk - 1;
-            //     if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungKeluar/total", dataPengunjungKeluar))
-            //     {
-            //         Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungMasuk/total", dataPengunjungMasuk);
-            //         Serial.println("BERHASIL pengunjungKeluar");
-            //     }
-            //     else
-            //     {
-            //         Serial.println("GAGAL pengunjungKeluar");
-            //         Serial.println(fbdo.errorReason());
-            //     }
-            // }
-
-            // if (sensorAntrianMasuk == 0)
-            // {
-            //     dataAntrianMasuk = dataAntrianMasuk + 1;
-            //     if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/antrianMasuk/total", dataAntrianMasuk))
-            //     {
-            //         Serial.println("BERHASIL antrianMasuk");
-            //     }
-            //     else
-            //     {
-            //         Serial.println("GAGAL antrianMasuk");
-            //         Serial.println(fbdo.errorReason());
-            //     }
-            // }
-
-            if (sensorAntrianKeluar == 0 && dataAntrianMasuk < 0)
-            {
-                dataAntrianKeluar = dataAntrianKeluar + 1;
-                dataAntrianMasuk = dataAntrianMasuk - 1;
-                if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/antrianKeluar/total", dataAntrianKeluar))
-                {
-                    Firebase.RTDB.setIntAsync(&fbdo, "antrian/antrianMasuk/total", dataAntrianMasuk);
-                    Serial.println("BERHASIL antrianKeluar");
-                }
-                else
-                {
-                    Serial.println("GAGAL antrianKeluar");
-                    Serial.println(fbdo.errorReason());
-                }
-            }
-        }
+        // put your main code here, to run repeatedly:
+        handleSaveData();
     }
 
     Serial.print("DATA PRE FIREBASE 2      :");
-    Serial.println(dataAntrianKeluar);
+    Serial.println(dataLocal);
     Serial.println();
     Serial.println();
     Serial.println();

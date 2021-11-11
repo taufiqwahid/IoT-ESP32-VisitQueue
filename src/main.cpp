@@ -44,16 +44,14 @@ const int pinAntrianKeluar = 23;
 bool signupOK = false;
 int dataLocal = 0;
 int jumlahPengunjung = 0;
-int dataPengunjungMasuk = 0;
-int dataPengunjungKeluar = 0;
-int dataAntrianMasuk = 0;
-int dataAntrianKeluar = 0;
+int dataPengunjung = 0;
+int dataAntrian = 0;
 int batas = 0;
 int data_firebase = 0;
 
 void handleGetData()
 {
-  if (Firebase.RTDB.getInt(&fbdo, "pengunjung/pengunjungMasuk/total"))
+  if (Firebase.RTDB.getInt(&fbdo, "pengunjung/jumlahSaatIni/total"))
   {
     if (fbdo.dataType() == "int")
     {
@@ -169,20 +167,18 @@ void loop()
     Serial.println();
 
     Serial.print("DATA PRE FIREBASE 1      :");
-    Serial.print(dataPengunjungMasuk);
-    Serial.print(dataPengunjungKeluar);
-    Serial.print(dataAntrianMasuk);
-    Serial.println(dataAntrianKeluar);
+    Serial.print(dataPengunjung);
+    Serial.print(dataAntrian);
 
     // PENGUNJUNG MASUK
-    if (dataPengunjungMasuk < batas)
+    if (dataPengunjung < batas)
     {
       if (sensorPengunjungMasuk == LOW)
       {
-        dataPengunjungMasuk = dataPengunjungMasuk + 1;
+        dataPengunjung = dataPengunjung + 1;
         jumlahPengunjung = jumlahPengunjung + 1;
 
-        if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungMasuk/total", dataPengunjungMasuk))
+        if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
         {
           Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahPengunjung/total", jumlahPengunjung);
           // Serial.println("BERHASUL pengunjungMasuk");
@@ -204,14 +200,15 @@ void loop()
     if (sensorPengunjungKeluar == LOW)
     {
 
-      dataPengunjungMasuk = dataPengunjungMasuk - 1;
-      if (dataPengunjungMasuk < 0)
+      dataPengunjung = dataPengunjung - 1;
+      if (dataPengunjung < 0)
       {
-        dataPengunjungMasuk = 0;
+        dataPengunjung = 0;
       }
 
-      if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/pengunjungMasuk/total", dataPengunjungMasuk))
+      if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
       {
+        Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/triggerNotif", dataPengunjung);
         // Serial.println("BERHASIL pengunjungKeluar");
       }
       else
@@ -222,14 +219,14 @@ void loop()
     }
 
     // ANTRIAN MASUK
-    if (dataPengunjungMasuk > 0)
+    if (dataPengunjung > 0)
     {
       if (sensorAntrianMasuk == LOW)
       {
-        if (dataAntrianMasuk < dataPengunjungMasuk)
+        if (dataAntrian < dataPengunjung)
         {
-          dataAntrianMasuk = dataAntrianMasuk + 1;
-          Firebase.RTDB.setIntAsync(&fbdo, "antrian/antrianMasuk/total", dataAntrianMasuk);
+          dataAntrian = dataAntrian + 1;
+          Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian);
           // Serial.println("BERHASIL antrianMasuk");
         }
         else
@@ -244,12 +241,12 @@ void loop()
     if (sensorAntrianKeluar == LOW)
     {
 
-      dataAntrianMasuk = dataAntrianMasuk - 1;
-      if (dataAntrianMasuk < 0)
+      dataAntrian = dataAntrian - 1;
+      if (dataAntrian < 0)
       {
-        dataAntrianMasuk = 0;
+        dataAntrian = 0;
       }
-      if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/antrianMasuk/total", dataAntrianMasuk))
+      if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian))
       {
         // Serial.println("BERHASIL antrianKeluar");
       }

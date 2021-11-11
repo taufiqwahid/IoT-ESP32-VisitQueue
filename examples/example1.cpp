@@ -10,7 +10,6 @@
   Based in the RTDB Basic Example by Firebase-ESP-Client library by mobizt
   https://github.com/mobizt/Firebase-ESP-Client/blob/main/examples/RTDB/Basic/Basic.ino
 */
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
@@ -20,8 +19,8 @@
 //Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
-#define WIFI_SSID "Not Wifi"
-#define WIFI_PASSWORD "tidakada00"
+#define WIFI_SSID "Virus"
+#define WIFI_PASSWORD "11112222"
 
 //For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
 

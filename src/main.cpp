@@ -208,7 +208,6 @@ void loop()
 
       if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
       {
-        Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/triggerNotif", dataPengunjung);
         // Serial.println("BERHASIL pengunjungKeluar");
       }
       else
@@ -248,6 +247,7 @@ void loop()
       }
       if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian))
       {
+        Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/triggerNotif", dataAntrian);
         // Serial.println("BERHASIL antrianKeluar");
       }
       else

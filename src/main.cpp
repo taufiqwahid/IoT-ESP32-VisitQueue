@@ -41,6 +41,10 @@ const int pinPengunjungMasuk = 19;
 const int pinPengunjungKeluar = 21;
 const int pinAntrianMasuk = 22;
 const int pinAntrianKeluar = 23;
+int kondisiPengunjungMasuk = 0;
+int kondisiPengunjungKeluar = 0;
+int kondisiAntrianMasuk = 0;
+int kondisiAntrianKeluar = 0;
 bool signupOK = false;
 int dataLocal = 0;
 int jumlahPengunjung = 0;
@@ -170,13 +174,21 @@ void loop()
     Serial.print(dataPengunjung);
     Serial.print(dataAntrian);
 
-    // PENGUNJUNG MASUK
+    /////// // PENGUNJUNG MASUK /////////
     if (dataPengunjung < batas)
     {
-      if (sensorPengunjungMasuk == LOW)
+
+      if (sensorPengunjungMasuk == HIGH)
       {
-        dataPengunjung = dataPengunjung + 1;
+        dataPengunjung = dataPengunjung;
+        kondisiPengunjungMasuk = 0;
+      }
+
+      else if (sensorPengunjungMasuk == LOW && kondisiPengunjungMasuk == 0)
+      {
+        dataPengunjung += 1;
         jumlahPengunjung = jumlahPengunjung + 1;
+        kondisiPengunjungMasuk = 1;
 
         if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
         {
@@ -189,6 +201,12 @@ void loop()
           Serial.println(fbdo.errorReason());
         }
       }
+
+      else if (sensorPengunjungMasuk == LOW && kondisiPengunjungMasuk == 1)
+      {
+        dataPengunjung = dataPengunjung;
+        kondisiPengunjungMasuk = 1;
+      }
     }
     else
     {
@@ -196,11 +214,21 @@ void loop()
       Serial.println(batas);
     }
 
-    // PENGUNJUNG KELUAR
-    if (sensorPengunjungKeluar == LOW)
-    {
+    ///////// END PENGUNJUNG MASUK /////////
 
+    ///////// PENGUNJUNG KELUAR /////////
+
+    if (sensorPengunjungKeluar == HIGH)
+    {
+      dataPengunjung = dataPengunjung;
+      kondisiPengunjungKeluar = 0;
+    }
+
+    else if (sensorPengunjungKeluar == LOW && kondisiPengunjungKeluar == 0)
+    {
       dataPengunjung = dataPengunjung - 1;
+      kondisiPengunjungKeluar = 1;
+
       if (dataPengunjung < 0)
       {
         dataPengunjung = 0;
@@ -217,11 +245,28 @@ void loop()
       }
     }
 
-    // ANTRIAN MASUK
+    else if (sensorPengunjungKeluar == LOW && kondisiPengunjungKeluar == 1)
+    {
+      dataPengunjung = dataPengunjung;
+      kondisiPengunjungKeluar = 1;
+    }
+
+    ///////// END PENGUNJUNG KELUAR /////////
+
+    ////////// ANTRIAN MASUK //////////////
     if (dataPengunjung > 0)
     {
-      if (sensorAntrianMasuk == LOW)
+
+      if (sensorAntrianMasuk == HIGH)
       {
+        dataAntrian = dataAntrian;
+        kondisiAntrianMasuk = 0;
+      }
+
+      else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 0)
+      {
+        kondisiAntrianMasuk = 1;
+
         if (dataAntrian < dataPengunjung)
         {
           dataAntrian = dataAntrian + 1;
@@ -234,11 +279,26 @@ void loop()
           Serial.println(fbdo.errorReason());
         }
       }
+
+      else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 1)
+      {
+        dataAntrian = dataAntrian;
+        kondisiAntrianMasuk = 1;
+      }
+    }
+    ////////// END ANTRIAN MASUK //////////////
+
+    ///////// ANTRIAN KELUAR //////////
+
+    if (sensorAntrianKeluar == HIGH)
+    {
+      dataAntrian = dataAntrian;
+      kondisiAntrianKeluar = 0;
     }
 
-    // ANTRIAN KELUAR
-    if (sensorAntrianKeluar == LOW)
+    else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 0)
     {
+      kondisiAntrianKeluar = 1;
 
       dataAntrian = dataAntrian - 1;
       if (dataAntrian < 0)
@@ -256,8 +316,14 @@ void loop()
         Serial.println(fbdo.errorReason());
       }
     }
+
+    else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 1)
+    {
+      dataAntrian = dataAntrian;
+      kondisiAntrianKeluar = 1;
+    }
+    ///////// END ANTRIAN KELUAR //////////
   }
   Serial.println();
   Serial.println("=============================");
-  delay(300);
 }

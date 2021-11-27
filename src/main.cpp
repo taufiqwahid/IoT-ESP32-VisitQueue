@@ -1,35 +1,18 @@
-
-
-/*
-  Rui Santos
-  Complete project details at our blog.
-    - ESP32: https://RandomNerdTutorials.com/esp32-firebase-realtime-database/
-    - ESP8266: https://RandomNerdTutorials.com/esp8266-nodemcu-firebase-realtime-database/
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-  Based in the RTDB Basic Example by Firebase-ESP-Client library by mobizt
-  https://github.com/mobizt/Firebase-ESP-Client/blob/main/examples/RTDB/Basic/Basic.ino
-*/
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 
-//Provide the token generation process info.
 #include "addons/TokenHelper.h"
-//Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
 #define WIFI_SSID "Not Wifi"
 #define WIFI_PASSWORD "tidakada00"
 
-//For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
-
-/* 2. Define the API Key */
+/*  Define the API Key */
 #define API_KEY "AIzaSyBNLDRrSqo01NqJMrr7tO2h2fy-VswcLHA"
 
-/* 3. Define the RTDB URL */
-#define DATABASE_URL "https://visitqueue-c0d40-default-rtdb.firebaseio.com/" //<databaseName>.firebaseio.com or <databaseName>.<region>.firebasedatabase.app
+/* Define the RTDB URL */
+#define DATABASE_URL "https://visitqueue-c0d40-default-rtdb.firebaseio.com/"
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -41,6 +24,9 @@ const int pinPengunjungMasuk = 19;
 const int pinPengunjungKeluar = 21;
 const int pinAntrianMasuk = 22;
 const int pinAntrianKeluar = 23;
+const int pinBuzzer = 18;
+bool statusBuzzer = LOW;
+unsigned long waktuSebelum = 0;
 int kondisiPengunjungMasuk = 0;
 int kondisiPengunjungKeluar = 0;
 int kondisiAntrianMasuk = 0;
@@ -52,25 +38,6 @@ int dataPengunjung = 0;
 int dataAntrian = 0;
 int batas = 0;
 int data_firebase = 0;
-
-void handleGetData()
-{
-  if (Firebase.RTDB.getInt(&fbdo, "pengunjung/jumlahSaatIni/total"))
-  {
-    if (fbdo.dataType() == "int")
-    {
-      data_firebase = fbdo.intData();
-      Serial.print("DATA FIRBASE             :");
-
-      Serial.println(data_firebase);
-    }
-  }
-  else
-  {
-    Serial.println(fbdo.errorReason());
-    // handleGetData();
-  }
-}
 
 void handleGetLimitData()
 {
@@ -98,6 +65,7 @@ void setup()
   pinMode(pinPengunjungKeluar, INPUT);
   pinMode(pinAntrianMasuk, INPUT);
   pinMode(pinAntrianKeluar, INPUT);
+  pinMode(pinBuzzer, OUTPUT);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
@@ -133,7 +101,7 @@ void setup()
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
   handleGetLimitData();
-  delay(1000);
+  // delay(1000);
 }
 void loop()
 {
@@ -149,30 +117,30 @@ void loop()
     int sensorAntrianMasuk = digitalRead(pinAntrianMasuk);
     int sensorAntrianKeluar = digitalRead(pinAntrianKeluar);
 
-    Serial.print("BATAS JUMLAH         :");
-    Serial.println(batas);
-    Serial.println();
-    Serial.println();
-    Serial.println();
-    Serial.print("NILAI SENSOR1         :");
-    Serial.println(digitalRead(sensorPengunjungMasuk));
+    // Serial.print("BATAS JUMLAH         :");
+    // Serial.println(batas);
+    // Serial.println();
+    // Serial.println();
+    // Serial.println();
+    // Serial.print("NILAI SENSOR1         :");
+    // Serial.println(digitalRead(sensorPengunjungMasuk));
 
-    Serial.print("NILAI SENSOR2         :");
-    Serial.println(digitalRead(sensorPengunjungKeluar));
+    // Serial.print("NILAI SENSOR2         :");
+    // Serial.println(digitalRead(sensorPengunjungKeluar));
 
-    Serial.print("NILAI SENSOR3         :");
-    Serial.println(digitalRead(sensorAntrianMasuk));
+    // Serial.print("NILAI SENSOR3         :");
+    // Serial.println(digitalRead(sensorAntrianMasuk));
 
-    Serial.print("NILAI SENSOR4         :");
-    Serial.println(digitalRead(sensorAntrianKeluar));
+    // Serial.print("NILAI SENSOR4         :");
+    // Serial.println(digitalRead(sensorAntrianKeluar));
 
-    Serial.println();
-    Serial.println();
-    Serial.println();
+    // Serial.println();
+    // Serial.println();
+    // Serial.println();
 
-    Serial.print("DATA PRE FIREBASE 1      :");
-    Serial.print(dataPengunjung);
-    Serial.print(dataAntrian);
+    // Serial.print("DATA PRE FIREBASE 1      :");
+    // Serial.print(dataPengunjung);
+    // Serial.print(dataAntrian);
 
     /////// // PENGUNJUNG MASUK /////////
     if (dataPengunjung < batas)
@@ -207,10 +175,25 @@ void loop()
         dataPengunjung = dataPengunjung;
         kondisiPengunjungMasuk = 1;
       }
+      digitalWrite(pinBuzzer, LOW);
+      Serial.println(statusBuzzer);
     }
     else
     {
       Serial.println("PENGUNJUNG TELAH MENCAPAI BATAS");
+      if (dataPengunjung > 0)
+      {
+        unsigned long waktusSekarang = millis();
+        if (waktusSekarang - waktuSebelum >= 1000)
+        {
+          statusBuzzer = !statusBuzzer;
+          digitalWrite(pinBuzzer, statusBuzzer);
+          waktuSebelum = millis();
+        }
+      }
+
+      Serial.println(statusBuzzer);
+      Serial.println(dataPengunjung);
       Serial.println(batas);
     }
 
@@ -324,6 +307,6 @@ void loop()
     }
     ///////// END ANTRIAN KELUAR //////////
   }
-  Serial.println();
-  Serial.println("=============================");
+  // Serial.println();
+  // Serial.println("=============================");
 }

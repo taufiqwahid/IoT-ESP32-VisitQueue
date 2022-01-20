@@ -5,8 +5,8 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#define WIFI_SSID "Not Wifi"
-#define WIFI_PASSWORD "tidakada00"
+#define WIFI_SSID "IoT-Upii"
+#define WIFI_PASSWORD "password"
 
 /*  Define the API Key */
 #define API_KEY "AIzaSyBNLDRrSqo01NqJMrr7tO2h2fy-VswcLHA"
@@ -105,7 +105,6 @@ void setup()
 }
 void loop()
 {
-
   Serial.println();
   Serial.println();
   Serial.println();
@@ -114,8 +113,8 @@ void loop()
 
     int sensorPengunjungMasuk = digitalRead(pinPengunjungMasuk);
     int sensorPengunjungKeluar = digitalRead(pinPengunjungKeluar);
-    int sensorAntrianMasuk = digitalRead(pinAntrianMasuk);
-    int sensorAntrianKeluar = digitalRead(pinAntrianKeluar);
+    // int sensorAntrianMasuk = digitalRead(pinAntrianMasuk);
+    // int sensorAntrianKeluar = digitalRead(pinAntrianKeluar);
 
     // Serial.print("BATAS JUMLAH         :");
     // Serial.println(batas);
@@ -192,9 +191,9 @@ void loop()
         }
       }
 
-      Serial.println(statusBuzzer);
-      Serial.println(dataPengunjung);
-      Serial.println(batas);
+      // Serial.println(statusBuzzer);
+      // Serial.println(dataPengunjung);
+      // Serial.println(batas);
     }
 
     ///////// END PENGUNJUNG MASUK /////////
@@ -237,76 +236,79 @@ void loop()
     ///////// END PENGUNJUNG KELUAR /////////
 
     ////////// ANTRIAN MASUK //////////////
-    if (dataPengunjung > 0)
-    {
+    // if (dataPengunjung > 0)
+    // {
 
-      if (sensorAntrianMasuk == HIGH)
-      {
-        dataAntrian = dataAntrian;
-        kondisiAntrianMasuk = 0;
-      }
+    //   if (sensorAntrianMasuk == HIGH)
+    //   {
+    //     dataAntrian = dataAntrian;
+    //     kondisiAntrianMasuk = 0;
+    //   }
 
-      else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 0)
-      {
-        kondisiAntrianMasuk = 1;
+    //   else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 0)
+    //   {
+    //     kondisiAntrianMasuk = 1;
 
-        if (dataAntrian < dataPengunjung)
-        {
-          dataAntrian = dataAntrian + 1;
-          Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian);
-          // Serial.println("BERHASIL antrianMasuk");
-        }
-        else
-        {
-          Serial.println("GAGAL antrianMasuk");
-          Serial.println(fbdo.errorReason());
-        }
-      }
+    //     if (dataAntrian < dataPengunjung)
+    //     {
+    //       dataAntrian = dataAntrian + 1;
+    //       Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian);
+    //       // Serial.println("BERHASIL antrianMasuk");
+    //     }
+    //     else
+    //     {
+    //       Serial.println("GAGAL antrianMasuk");
+    //       Serial.println(fbdo.errorReason());
+    //     }
+    //   }
 
-      else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 1)
-      {
-        dataAntrian = dataAntrian;
-        kondisiAntrianMasuk = 1;
-      }
-    }
+    //   else if (sensorAntrianMasuk == LOW && kondisiAntrianMasuk == 1)
+    //   {
+    //     dataAntrian = dataAntrian;
+    //     kondisiAntrianMasuk = 1;
+    //   }
+    // }
     ////////// END ANTRIAN MASUK //////////////
 
     ///////// ANTRIAN KELUAR //////////
 
-    if (sensorAntrianKeluar == HIGH)
-    {
-      dataAntrian = dataAntrian;
-      kondisiAntrianKeluar = 0;
-    }
+    // if (sensorAntrianKeluar == HIGH)
+    // {
+    //   dataAntrian = dataAntrian;
+    //   kondisiAntrianKeluar = 0;
+    // }
 
-    else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 0)
-    {
-      kondisiAntrianKeluar = 1;
+    // else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 0)
+    // {
+    //   kondisiAntrianKeluar = 1;
 
-      dataAntrian = dataAntrian - 1;
-      if (dataAntrian < 0)
-      {
-        dataAntrian = 0;
-      }
-      if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian))
-      {
-        Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/triggerNotif", dataAntrian);
-        // Serial.println("BERHASIL antrianKeluar");
-      }
-      else
-      {
-        Serial.println("GAGAL antrianKeluar");
-        Serial.println(fbdo.errorReason());
-      }
-    }
+    //   dataAntrian = dataAntrian - 1;
+    //   if (dataAntrian < 0)
+    //   {
+    //     dataAntrian = 0;
+    //   }
+    //   if (Firebase.RTDB.setIntAsync(&fbdo, "antrian/jumlahSaatIni/total", dataAntrian))
+    //   {
+    //     Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/triggerNotif", dataAntrian);
+    //     // Serial.println("BERHASIL antrianKeluar");
+    //   }
+    //   else
+    //   {
+    //     Serial.println("GAGAL antrianKeluar");
+    //     Serial.println(fbdo.errorReason());
+    //   }
+    // }
 
-    else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 1)
-    {
-      dataAntrian = dataAntrian;
-      kondisiAntrianKeluar = 1;
-    }
+    // else if (sensorAntrianKeluar == LOW && kondisiAntrianKeluar == 1)
+    // {
+    //   dataAntrian = dataAntrian;
+    //   kondisiAntrianKeluar = 1;
+    // }
     ///////// END ANTRIAN KELUAR //////////
   }
   // Serial.println();
   // Serial.println("=============================");
+  Serial.print(dataPengunjung);
+  Serial.print(dataAntrian);
+  Serial.println();
 }

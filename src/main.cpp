@@ -39,9 +39,10 @@ int dataAntrian = 0;
 int batas = 0;
 int data_firebase = 0;
 
+
 void handleGetLimitData()
 {
-  if (Firebase.RTDB.getInt(&fbdo, "pengunjung/batas"))
+  if (Firebase.RTDB.getInt(&fbdo, "bank/BCA/monitoring/batasPengunjung" ))
   {
     if (fbdo.dataType() == "int")
     {
@@ -72,7 +73,9 @@ void setup()
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
+    digitalWrite(pinBuzzer, true);
     delay(300);
+    digitalWrite(pinBuzzer, false);
   }
   Serial.println();
   Serial.print("Connected with IP: ");
@@ -142,7 +145,7 @@ void loop()
     // Serial.print(dataAntrian);
 
     /////// // PENGUNJUNG MASUK /////////
-    if (dataPengunjung < batas)
+    if (dataPengunjung < batas+1)
     {
 
       if (sensorPengunjungMasuk == HIGH)
@@ -157,9 +160,9 @@ void loop()
         jumlahPengunjung = jumlahPengunjung + 1;
         kondisiPengunjungMasuk = 1;
 
-        if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
+        if (Firebase.RTDB.setIntAsync(&fbdo, "bank/BCA/monitoring/pengunjung", dataPengunjung))
         {
-          Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahPengunjung/total", jumlahPengunjung);
+          Firebase.RTDB.setIntAsync(&fbdo, "bank/BCA/monitoring/totalPengunjung", jumlahPengunjung);
           // Serial.println("BERHASUL pengunjungMasuk");
         }
         else
@@ -216,9 +219,10 @@ void loop()
         dataPengunjung = 0;
       }
 
-      if (Firebase.RTDB.setIntAsync(&fbdo, "pengunjung/jumlahSaatIni/total", dataPengunjung))
+      if (Firebase.RTDB.setIntAsync(&fbdo, "bank/BCA/monitoring/pengunjung", dataPengunjung))
       {
         // Serial.println("BERHASIL pengunjungKeluar");
+        Firebase.RTDB.setIntAsync(&fbdo, "bank/BCA/monitoring/triggerNotif", dataPengunjung);
       }
       else
       {
